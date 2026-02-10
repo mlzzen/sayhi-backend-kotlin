@@ -29,11 +29,12 @@ class JwtAuthenticationFilter(
         try {
             val jwt = extractJwtFromRequest(request)
 
-            if (StringUtils.hasText(jwt)) {
+            if (jwt != null && StringUtils.hasText(jwt)) {
                 val userId = jwtUtil.getUserIdFromToken(jwt)
 
                 if (userId != null && SecurityContextHolder.getContext().authentication == null) {
-                    val userDetails: UserDetails = userDetailsService.loadUserByUsername(jwtUtil.getEmailFromToken(jwt)!!)
+                    val email = jwtUtil.getEmailFromToken(jwt) ?: throw IllegalStateException("Email not found in token")
+                    val userDetails: UserDetails = userDetailsService.loadUserByUsername(email)
 
                     if (jwtUtil.validateToken(jwt) != null) {
                         val authentication = UsernamePasswordAuthenticationToken(
