@@ -26,11 +26,10 @@ interface FriendshipRepository : JpaRepository<Friendship, Long> {
 
     // Find all friends (accepted) for a user
     @Query("""
-        SELECT CASE WHEN f.requester = :user THEN f.addressee ELSE f.requester END
-        FROM Friendship f
+        SELECT f FROM Friendship f
         WHERE (f.requester = :user OR f.addressee = :user) AND f.status = :status
     """)
-    fun findFriendsByUser(@Param("user") user: User, @Param("status") status: FriendshipStatus): List<User>
+    fun findAcceptedFriendshipsByUser(@Param("user") user: User, @Param("status") status: FriendshipStatus): List<Friendship>
 
     // Find all pending requests received by a user
     @Query("SELECT f FROM Friendship f WHERE f.addressee = :user AND f.status = :status")

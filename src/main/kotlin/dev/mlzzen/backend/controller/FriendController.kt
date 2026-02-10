@@ -14,7 +14,7 @@ class FriendController(
 ) {
 
     // Get current user's friends
-    @GetMapping
+    @GetMapping("")
     fun getFriends(@RequestHeader("Authorization") authHeader: String): ResponseEntity<List<FriendDto>> {
         val userId = extractUserId(authHeader)
         val friends = friendshipService.getFriends(userId)

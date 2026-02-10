@@ -81,14 +81,15 @@ class FriendshipService(
         val user = userRepository.findById(userId)
             .orElseThrow { IllegalArgumentException("User not found") }
 
-        val friends = friendshipRepository.findFriendsByUser(user, FriendshipStatus.ACCEPTED)
-        return friends.map { friend ->
+        val friendships = friendshipRepository.findAcceptedFriendshipsByUser(user, FriendshipStatus.ACCEPTED)
+        return friendships.map { friendship ->
+            val friend = if (friendship.requester.id == userId) friendship.addressee else friendship.requester
             FriendDto(
                 id = friend.id,
                 username = friend.username,
                 avatarUrl = friend.avatarUrl,
                 status = FriendshipStatus.ACCEPTED,
-                createdAt = "" // Could add a separate field for accepted_at
+                createdAt = friendship.createdAt.toString()
             )
         }
     }
