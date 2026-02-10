@@ -11,7 +11,7 @@ class MessageCacheService(
 ) {
     companion object {
         private const val RECENT_MESSAGES_PREFIX = "chat:recent:"
-        private const val MESSAGE_CACHE_DURATION = Duration.ofHours(24)
+        private val MESSAGE_CACHE_DURATION = Duration.ofHours(24)
         private const val MAX_CACHED_MESSAGES = 100
     }
 

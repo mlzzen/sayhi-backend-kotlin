@@ -11,7 +11,7 @@ class OnlineStatusService(
     companion object {
         private const val ONLINE_KEY_PREFIX = "user:online:"
         private const val LAST_SEEN_KEY_PREFIX = "user:lastseen:"
-        private const val ONLINE_DURATION = Duration.ofMinutes(5)
+        private val ONLINE_DURATION = Duration.ofMinutes(5)
     }
 
     // Set user as online
