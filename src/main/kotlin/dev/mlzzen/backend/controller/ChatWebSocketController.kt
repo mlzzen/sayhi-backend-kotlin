@@ -8,8 +8,8 @@ import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.SendTo
 import org.springframework.messaging.simp.annotation.SubscribeMapping
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor
 import org.springframework.stereotype.Controller
-import java.security.Principal
 
 @Controller
 class ChatWebSocketController(
@@ -22,9 +22,9 @@ class ChatWebSocketController(
     fun handleMessage(
         @DestinationVariable userId: Long,
         payload: Map<String, Any>,
-        principal: Principal?
+        accessor: StompHeaderAccessor
     ): MessageDto {
-        val currentUserId = principal?.name?.toLongOrNull()
+        val currentUserId = accessor.user?.name?.toLongOrNull()
             ?: throw IllegalArgumentException("User not authenticated")
 
         val receiverId = (payload["receiverId"] as Number).toLong()
