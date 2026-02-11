@@ -34,7 +34,7 @@ class FileController(
     ): ResponseEntity<Map<String, Any>> {
         // Validate authorization
         val token = authHeader.substringAfter("Bearer ", "")
-        if (!jwtUtil.validateToken(token)) {
+        if (jwtUtil.validateToken(token) == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(mapOf("error" to "Unauthorized"))
         }
@@ -75,7 +75,7 @@ class FileController(
                 "url" to fileUrl,
                 "filename" to uniqueFilename,
                 "size" to file.size,
-                "contentType" to file.contentType
+                "contentType" to (file.contentType ?: "image/jpeg")
             ))
         } catch (e: IOException) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -90,7 +90,7 @@ class FileController(
     ): ResponseEntity<Map<String, Any>> {
         // Validate authorization
         val token = authHeader.substringAfter("Bearer ", "")
-        if (!jwtUtil.validateToken(token)) {
+        if (jwtUtil.validateToken(token) == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(mapOf("error" to "Unauthorized"))
         }
