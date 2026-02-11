@@ -32,6 +32,14 @@ spring:
       port: 6379
       timeout: 6000ms
 
+  # Static resources configuration
+  web:
+    resources:
+      static-locations: classpath:/static/,file:./uploads/
+      add-mappings: true
+  mvc:
+    static-path-pattern: /uploads/**
+
 # Application Configuration
 server:
   port: 8080
@@ -45,12 +53,3 @@ jwt:
 app:
   host: http://localhost:8080
   upload-path: ./uploads
-
-# Static resources configuration
-spring:
-  web:
-    resources:
-      static-locations: classpath:/static/,file:./uploads/
-      add-mappings: true
-  mvc:
-    static-path-pattern: /uploads/**
