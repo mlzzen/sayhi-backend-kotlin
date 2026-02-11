@@ -42,12 +42,12 @@
 ---
 
 ### Phase 4: 群聊
-- [ ] 创建 groups 数据表
-- [ ] 创建 group_members 数据表
-- [ ] 修改 messages 表添加 group_id
-- [ ] 实现创建群组 API
-- [ ] 实现邀请成员 API
-- [ ] 实现群消息广播
+- [x] 创建 groups 数据表
+- [x] 创建 group_members 数据表
+- [x] 修改 messages 表添加 group_id
+- [x] 实现创建群组 API
+- [x] 实现邀请成员 API
+- [x] 实现群消息广播
 
 ---
 

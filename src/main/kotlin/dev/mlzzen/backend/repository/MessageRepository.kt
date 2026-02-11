@@ -62,4 +62,12 @@ interface MessageRepository : JpaRepository<Message, Long> {
         ORDER BY m.createdAt DESC
     """)
     fun findLatestMessagesByUser(@Param("user") user: User): List<Message>
+
+    // Get messages by group
+    @Query("""
+        SELECT m FROM Message m
+        WHERE m.group = :group
+        ORDER BY m.createdAt DESC
+    """)
+    fun findByGroup(@Param("group") group: dev.mlzzen.backend.entity.Group): List<Message>
 }

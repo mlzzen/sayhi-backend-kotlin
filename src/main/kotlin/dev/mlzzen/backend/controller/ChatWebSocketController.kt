@@ -1,6 +1,8 @@
 package dev.mlzzen.backend.controller
 
+import dev.mlzzen.backend.dto.CreateGroupMessageDto
 import dev.mlzzen.backend.dto.CreateMessageDto
+import dev.mlzzen.backend.dto.GroupMessageDto
 import dev.mlzzen.backend.dto.MessageDto
 import dev.mlzzen.backend.entity.MessageType
 import dev.mlzzen.backend.service.MessageService
@@ -16,7 +18,7 @@ class ChatWebSocketController(
     private val messageService: MessageService
 ) {
 
-    // Handle chat messages
+    // Handle private chat messages
     @MessageMapping("/chat/{userId}")
     @SendTo("/topic/messages/{userId}")
     fun handleMessage(
@@ -44,9 +46,42 @@ class ChatWebSocketController(
         return messageService.sendMessage(currentUserId, dto)
     }
 
+    // Handle group chat messages
+    @MessageMapping("/group/{groupId}")
+    @SendTo("/topic/group/{groupId}")
+    fun handleGroupMessage(
+        @DestinationVariable groupId: Long,
+        payload: Map<String, Any>,
+        accessor: StompHeaderAccessor
+    ): GroupMessageDto {
+        val currentUserId = accessor.user?.name?.toLongOrNull()
+            ?: throw IllegalArgumentException("User not authenticated")
+
+        val content = payload["content"] as String
+        val messageType = try {
+            MessageType.valueOf((payload["messageType"] as? String) ?: "TEXT")
+        } catch (e: Exception) {
+            MessageType.TEXT
+        }
+
+        val dto = CreateGroupMessageDto(
+            groupId = groupId,
+            content = content,
+            messageType = messageType
+        )
+
+        return messageService.sendGroupMessage(currentUserId, dto)
+    }
+
     // Subscribe to user's personal messages
     @SubscribeMapping("/messages/{userId}")
     fun subscribeMessages(@DestinationVariable userId: Long): Map<String, Any> {
         return mapOf("status" to "connected", "userId" to userId)
+    }
+
+    // Subscribe to group messages
+    @SubscribeMapping("/group/{groupId}")
+    fun subscribeGroup(@DestinationVariable groupId: Long): Map<String, Any> {
+        return mapOf("status" to "connected", "groupId" to groupId)
     }
 }

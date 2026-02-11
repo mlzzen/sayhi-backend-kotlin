@@ -1,10 +1,13 @@
 package dev.mlzzen.backend.service
 
 import dev.mlzzen.backend.dto.ChatHistoryDto
+import dev.mlzzen.backend.dto.CreateGroupMessageDto
 import dev.mlzzen.backend.dto.CreateMessageDto
+import dev.mlzzen.backend.dto.GroupMessageDto
 import dev.mlzzen.backend.dto.MessageDto
 import dev.mlzzen.backend.entity.Message
 import dev.mlzzen.backend.entity.User
+import dev.mlzzen.backend.repository.GroupRepository
 import dev.mlzzen.backend.repository.MessageRepository
 import dev.mlzzen.backend.repository.UserRepository
 import org.springframework.data.domain.PageRequest
@@ -15,7 +18,8 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class MessageService(
     private val messageRepository: MessageRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val groupRepository: GroupRepository
 ) {
 
     // Send a message
@@ -35,6 +39,25 @@ class MessageService(
         val saved = messageRepository.save(message)
 
         return toMessageDto(saved)
+    }
+
+    // Send a group message
+    @Transactional
+    fun sendGroupMessage(senderId: Long, dto: CreateGroupMessageDto): GroupMessageDto {
+        val sender = userRepository.findById(senderId)
+            .orElseThrow { IllegalArgumentException("User not found") }
+        val group = groupRepository.findById(dto.groupId)
+            .orElseThrow { IllegalArgumentException("Group not found") }
+
+        val message = Message(
+            sender = sender,
+            group = group,
+            content = dto.content,
+            messageType = dto.messageType
+        )
+        val saved = messageRepository.save(message)
+
+        return toGroupMessageDto(saved)
     }
 
     // Get chat history with a user
@@ -60,8 +83,9 @@ class MessageService(
 
         // Group by conversation partner
         val chatMap = mutableMapOf<Long, MutableList<Message>>()
-        latestMessages.forEach { message ->
-            val partnerId = if (message.sender.id == userId) message.receiver.id else message.sender.id
+        for (message in latestMessages) {
+            val partner = message.receiver ?: continue
+            val partnerId = if (message.sender.id == userId) partner.id else message.sender.id
             chatMap.getOrPut(partnerId) { mutableListOf() }.add(message)
         }
 
@@ -89,7 +113,7 @@ class MessageService(
             .orElseThrow { IllegalArgumentException("User not found") }
 
         val messages = messageRepository.findMessagesBetweenUsers(user, fromUser, PageRequest.of(0, Int.MAX_VALUE))
-        messages.filter { !it.isRead && it.receiver.id == userId }
+        messages.filter { !it.isRead && it.receiver?.id == userId }
             .forEach { it.isRead = true }
         messageRepository.saveAll(messages)
     }
@@ -98,12 +122,24 @@ class MessageService(
         return MessageDto(
             id = message.id,
             senderId = message.sender.id,
-            receiverId = message.receiver.id,
+            receiverId = message.receiver?.id ?: 0,
             senderUsername = message.sender.username,
-            receiverUsername = message.receiver.username,
+            receiverUsername = message.receiver?.username ?: "",
             content = message.content,
             messageType = message.messageType,
             isRead = message.isRead,
+            createdAt = message.createdAt
+        )
+    }
+
+    private fun toGroupMessageDto(message: Message): GroupMessageDto {
+        return GroupMessageDto(
+            id = message.id,
+            senderId = message.sender.id,
+            senderUsername = message.sender.username,
+            groupId = message.group!!.id,
+            content = message.content,
+            messageType = message.messageType,
             createdAt = message.createdAt
         )
     }

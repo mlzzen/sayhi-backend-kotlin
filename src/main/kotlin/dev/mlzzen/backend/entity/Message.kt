@@ -15,8 +15,12 @@ data class Message(
     val sender: User,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id", nullable = false)
-    val receiver: User,
+    @JoinColumn(name = "receiver_id", columnDefinition = "NULL")
+    val receiver: User? = null,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    val group: Group? = null,
 
     @Column(nullable = false, length = 2000)
     val content: String,
